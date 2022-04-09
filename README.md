@@ -1,5 +1,5 @@
 # RandomRSSTwitterBot
-A Twitter bot written in C# using Tweetinvi to select a random article from a custom list of RSS feeds then tweet it out.
+A Twitter bot written in C# using [Tweetinvi](https://github.com/linvi/tweetinvi) and [System.ServiceModel.Syndication](https://www.nuget.org/packages/System.ServiceModel.Syndication/) to select a random article from a custom list of RSS feeds then tweet it out.
 
 To install the bot, download the latest release, drag the folder out of the .RAR archive, and place it wherever you intend to store the bot. Run it once to produce a keys.txt file, then input your keys there. Run the bot again, and it will create a few more files (a logs folder where logs are stored and titled by Unix timestamp, a sources.txt file, and a postings.txt file). If the bot ran successfully, it will have also posted something from the default feed (Google News' Technology topic). Check out the bot's feed to see if the post was successful!
 
