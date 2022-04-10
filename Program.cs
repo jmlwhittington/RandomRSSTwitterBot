@@ -23,6 +23,7 @@ namespace RandomRSSTwitterBot
         private static int attempts = 0;
         private static int hour = DateTime.Now.Hour;
         private static int value;
+        private static bool test = false;
         private static Random rand = new Random();
         static async Task Main()
         {
@@ -51,17 +52,28 @@ namespace RandomRSSTwitterBot
             {
                 File.WriteAllText(path + "/postings.txt", "");
             }
-            Console.WriteLine(DateTime.Now + ": How frequent in hours do you want this bot to run?");
+            Console.WriteLine(DateTime.Now + ": How frequent in hours do you want this bot to run? Type 0 to test bot:");
             value = Console.Read();
-            hour = hour + Convert.ToChar(value) - 1;
-            if (hour >= 24)
-            {
-                hour = hour - 24;
-            }
             Console.WriteLine(Environment.NewLine);
-            Console.WriteLine(DateTime.Now + ": Seeking article to post...");
-            File.AppendAllText(path + "/logs/" + startTime + ".txt", DateTime.Now + ": Seeking article to post..." + Environment.NewLine);
-            await Seek();
+            value = Int32.Parse(Convert.ToChar(value).ToString());
+            if (value == 0)
+            {
+                test = true;
+                Console.WriteLine(DateTime.Now + ": Seeking article to post...");
+                File.AppendAllText(path + "/logs/" + startTime + ".txt", DateTime.Now + ": Seeking article to post..." + Environment.NewLine);
+                await Seek();
+            }
+            else
+            {
+                hour = hour + value - 1;
+                if (hour >= 24)
+                {
+                    hour = hour - 24;
+                }
+                Console.WriteLine(DateTime.Now + ": Running bot every " + value + " hour(s)!" + Environment.NewLine);
+                File.AppendAllText(path + "/logs/" + startTime + ".txt", DateTime.Now + ": Running bot every " + value + " hour(s)!" + Environment.NewLine + Environment.NewLine);
+                await Timer();
+            }
         }
         static async Task Seek()
         {
@@ -101,9 +113,11 @@ namespace RandomRSSTwitterBot
                 else
                 {
                     Console.WriteLine(DateTime.Now + ": Failure to find suitable article within 10 attempts, press any key to exit...");
-                    File.AppendAllText(path + "/logs/" + startTime + ".txt", DateTime.Now + ": Failure to find suitable article within 10 attempts, press any key to exit..." + Environment.NewLine);
-                    Console.Read();
-                    Environment.Exit(0);
+                    File.AppendAllText(path + "/logs/" + startTime + ".txt", DateTime.Now + ": Failure to find suitable article within 10 attempts, will try again later..." + Environment.NewLine);
+                    attempts = 0;
+                    failure = false;
+                    GC.Collect();
+                    await Timer();
                 }
             }
             read.Dispose();
@@ -126,14 +140,24 @@ namespace RandomRSSTwitterBot
             attempts = 0;
             failure = false;
             GC.Collect();
-            await Timer();
+            if (test == true)
+            {
+                Console.WriteLine(DateTime.Now + "Press any key to exit...");
+                File.AppendAllText(path + "/logs/" + startTime + ".txt", DateTime.Now + "Press any key to exit...");
+                Console.Read();
+                Environment.Exit(0);
+            }
+            else
+            {
+                await Timer();
+            }
         }
         static async Task Timer()
         {
             Thread.Sleep(60000);
-            if (hour < DateTime.Now.Hour || (hour <= 23 && DateTime.Now.Hour == hour + Convert.ToChar(value) - 24))
+            if (hour < DateTime.Now.Hour || (hour <= 23 && DateTime.Now.Hour == hour + value - 24))
             {
-                hour = DateTime.Now.Hour + Convert.ToChar(value) - 1; ;
+                hour = DateTime.Now.Hour + value - 1; ;
                 if (hour >= 24)
                 {
                     hour = hour - 24;
