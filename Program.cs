@@ -8,17 +8,19 @@ using Tweetinvi;
 using Tweetinvi.Models;
 using System.IO;
 using System.Threading;
+using System.Linq;
 
 namespace RandomRSSTwitterBot
 {
     class RandomRSS
     {
         private static string path = Directory.GetCurrentDirectory();
+        private static string logsPath = path + "/logs/";
         private static string startTime = DateTimeOffset.Now.ToUnixTimeSeconds().ToString();
         private static List<string> titles = new List<string>();
         private static List<Uri> links = new List<Uri>();
-        private static int i;
         private static int urlNum;
+        private static int i;
         private static bool failure = false;
         private static int attempts = 0;
         private static int hour = DateTime.Now.Hour;
@@ -31,22 +33,40 @@ namespace RandomRSSTwitterBot
             {
                 Directory.CreateDirectory(path + "/logs");
             }
-            File.WriteAllText(path + "/logs/" + startTime + ".txt", "");
+            File.WriteAllText(logsPath + startTime + ".txt", "");
             Console.WriteLine(DateTime.Now + ": RandomRSSTwitterBot booting up!" + Environment.NewLine);
-            File.AppendAllText(path + "/logs/" + startTime + ".txt", DateTime.Now + ": RandomRSSTwitterBot booting up!" + Environment.NewLine + Environment.NewLine);
+            File.AppendAllText(logsPath + startTime + ".txt", DateTime.Now + ": RandomRSSTwitterBot booting up!" + Environment.NewLine + Environment.NewLine);
             if (!File.Exists(path + "/keys.txt"))
             {
                 File.WriteAllText(path + "/keys.txt", "<CONSUMER_KEY>        = " + Environment.NewLine + "<CONSUMER_SECRET>     = " + Environment.NewLine + "<ACCESS_TOKEN>        = " + Environment.NewLine + "<ACCESS_TOKEN_SECRET> = ");
                 Console.WriteLine(DateTime.Now + ": You need to input your authentication keys into keys.txt!" + Environment.NewLine + "Press any key to exit...");
-                File.AppendAllText(path + "/logs/" + startTime + ".txt", DateTime.Now + ": You need to input your authentication keys into keys.txt!" + Environment.NewLine + "Press any key to exit..." + Environment.NewLine);
-                Console.Read();
+                File.AppendAllText(logsPath + startTime + ".txt", DateTime.Now + ": You need to input your authentication keys into keys.txt!" + Environment.NewLine + "Press any key to exit..." + Environment.NewLine);
+                Console.ReadKey();
                 Environment.Exit(0);
             }
             if (!File.Exists(path + "/sources.txt"))
             {
                 Console.WriteLine(DateTime.Now + ": Creating sources.txt file..." + Environment.NewLine);
-                File.AppendAllText(path + "/logs/" + startTime + ".txt", DateTime.Now + ": Creating sources.txt file..." + Environment.NewLine + Environment.NewLine);
+                File.AppendAllText(logsPath + startTime + ".txt", DateTime.Now + ": Creating sources.txt file..." + Environment.NewLine + Environment.NewLine);
                 File.WriteAllText(path + "/sources.txt", "https://news.google.com/rss/topics/CAAqJggKIiBDQkFTRWdvSUwyMHZNRGRqTVhZU0FtVnVHZ0pWVXlnQVAB");
+            }
+            if (!File.Exists(path + "/frequency.txt"))
+            {
+                Console.WriteLine(DateTime.Now + ": Creating frequency.txt file..." + Environment.NewLine);
+                File.AppendAllText(logsPath + startTime + ".txt", DateTime.Now + ": Creating frequency.txt file..." + Environment.NewLine + Environment.NewLine);
+                File.WriteAllText(path + "/frequency.txt", "0");
+                bool runOnce = false;
+                foreach (string item in File.ReadAllLines(path + "/sources.txt"))
+                {
+                    if (runOnce == false)
+                    {
+                        runOnce = true;
+                    }
+                    else
+                    {
+                        File.AppendAllText(path + "/frequency.txt", Environment.NewLine + "0");
+                    }
+                }
             }
             if (!File.Exists(path + "/postings.txt"))
             {
@@ -60,7 +80,7 @@ namespace RandomRSSTwitterBot
             {
                 test = true;
                 Console.WriteLine(DateTime.Now + ": Seeking article to post...");
-                File.AppendAllText(path + "/logs/" + startTime + ".txt", DateTime.Now + ": Seeking article to post..." + Environment.NewLine);
+                File.AppendAllText(logsPath + startTime + ".txt", DateTime.Now + ": Seeking article to post..." + Environment.NewLine);
                 await Seek();
             }
             else
@@ -71,8 +91,11 @@ namespace RandomRSSTwitterBot
                     hour = hour - 24;
                 }
                 Console.WriteLine(DateTime.Now + ": Running bot every " + value + " hour(s)!" + Environment.NewLine);
-                File.AppendAllText(path + "/logs/" + startTime + ".txt", DateTime.Now + ": Running bot every " + value + " hour(s)!" + Environment.NewLine + Environment.NewLine);
-                await Timer();
+                File.AppendAllText(logsPath + startTime + ".txt", DateTime.Now + ": Running bot every " + value + " hour(s)!" + Environment.NewLine + Environment.NewLine);
+                while (true)
+                {
+                    await Timer();
+                }
             }
         }
         static async Task Seek()
@@ -80,6 +103,32 @@ namespace RandomRSSTwitterBot
             string[] sources = File.ReadAllLines(path + "/sources.txt");
             urlNum = rand.Next(0, sources.Length);
             string url = sources[urlNum];
+            Console.WriteLine(DateTime.Now + ": Chose source #" + urlNum + " (" + url + ")!");
+            File.AppendAllText(logsPath + startTime + ".txt", DateTime.Now + ": Chose source #" + urlNum + " (" + url + ")!" + Environment.NewLine);
+            string[] freq = File.ReadAllLines(path + "/frequency.txt");
+            List<double> freqD = new List<double>();
+            foreach (string item in freq)
+            {
+                freqD.Add((double)Int32.Parse(item));
+            }
+            double avg = freqD.Average();
+            double sum = freqD.Sum(d => Math.Pow(d - avg, 2));
+            double sd = Math.Sqrt((sum) / freqD.Count());
+            double z = ((double)Int32.Parse(freq[urlNum]) - avg) / sd;
+            freqD.Clear();
+            int urlCurrent = urlNum;
+            if (z >= 1)
+            {
+                Console.WriteLine(DateTime.Now + ": Source #" + urlNum + " (" + url + ") too frequent, choosing again...");
+                File.AppendAllText(logsPath + startTime + ".txt", DateTime.Now + ": Source #" + urlNum + " (" + url + ") too frequent, choosing again..." + Environment.NewLine);
+                while (urlNum == urlCurrent)
+                {
+                    urlNum = rand.Next(0, sources.Length);
+                    url = sources[urlNum];
+                }
+                Console.WriteLine(DateTime.Now + ": Chose source #" + urlNum + " (" + url + ")!");
+                File.AppendAllText(logsPath + startTime + ".txt", DateTime.Now + ": Chose source #" + urlNum + " (" + url + ")!" + Environment.NewLine);
+            }
             XmlReader read = XmlReader.Create(url);
             SyndicationFeed rss = SyndicationFeed.Load(read);
             read.Close();
@@ -99,6 +148,7 @@ namespace RandomRSSTwitterBot
             if (failure == false)
             {
                 await Tweet();
+                read.Dispose();
             }
             else
             {
@@ -106,55 +156,85 @@ namespace RandomRSSTwitterBot
                 {
                     failure = false;
                     attempts = attempts + 1;
+                    titles.Clear();
+                    links.Clear();
                     Console.WriteLine(DateTime.Now + ": Duplicate chosen, trying again... (Attempt number: " + attempts + ")");
-                    File.AppendAllText(path + "/logs/" + startTime + ".txt", DateTime.Now + ": Duplicate chosen, trying again... (Attempt number: " + attempts + ")" + Environment.NewLine);
+                    File.AppendAllText(logsPath + startTime + ".txt", DateTime.Now + ": Duplicate chosen, trying again... (Attempt number: " + attempts + ")" + Environment.NewLine);
+                    read.Dispose();
                     await Seek();
                 }
                 else
                 {
                     Console.WriteLine(DateTime.Now + ": Failure to find suitable article within 10 attempts, press any key to exit...");
-                    File.AppendAllText(path + "/logs/" + startTime + ".txt", DateTime.Now + ": Failure to find suitable article within 10 attempts, will try again later..." + Environment.NewLine);
+                    File.AppendAllText(logsPath + startTime + ".txt", DateTime.Now + ": Failure to find suitable article within 10 attempts, will try again later..." + Environment.NewLine);
                     attempts = 0;
                     failure = false;
-                    GC.Collect();
-                    await Timer();
+                    titles.Clear();
+                    links.Clear();
+                    read.Dispose();
+                    return;
                 }
             }
-            read.Dispose();
         }
         static async Task Tweet()
         {
             Console.WriteLine(DateTime.Now + ": Suitable article found!" + Environment.NewLine + titles[i] + Environment.NewLine + links[i]);
-            File.AppendAllText(path + "/logs/" + startTime + ".txt", DateTime.Now + ": Suitable article found!" + Environment.NewLine + titles[i] + Environment.NewLine + links[i] + Environment.NewLine);
+            File.AppendAllText(logsPath + startTime + ".txt", DateTime.Now + ": Suitable article found!" + Environment.NewLine + titles[i] + Environment.NewLine + links[i] + Environment.NewLine);
             File.AppendAllText(path + "/postings.txt", titles[i] + Environment.NewLine);
-            Console.WriteLine(DateTime.Now + ": Tweeting article..." + Environment.NewLine);
-            File.AppendAllText(path + "/logs/" + startTime + ".txt", DateTime.Now + ": Tweeting article..." + Environment.NewLine + Environment.NewLine);
+            Console.WriteLine(DateTime.Now + ": Tweeting article...");
+            File.AppendAllText(logsPath + startTime + ".txt", DateTime.Now + ": Tweeting article..." + Environment.NewLine);
             string[] keys = File.ReadAllLines(path + "/keys.txt");
             keys[0] = keys[0].Remove(0, 24);
             keys[1] = keys[1].Remove(0, 24);
             keys[2] = keys[2].Remove(0, 24);
             keys[3] = keys[3].Remove(0, 24);
-            var userClient = new TwitterClient(keys[0], keys[1], keys[2], keys[3]);
-            var user = await userClient.Users.GetAuthenticatedUserAsync();
-            var tweet = await userClient.Tweets.PublishTweetAsync(titles[i] + "\n" + links[i]);
-            attempts = 0;
-            failure = false;
-            GC.Collect();
-            if (test == true)
+            try
             {
-                Console.WriteLine(DateTime.Now + "Press any key to exit...");
-                File.AppendAllText(path + "/logs/" + startTime + ".txt", DateTime.Now + "Press any key to exit...");
-                Console.Read();
-                Environment.Exit(0);
+                var userClient = new TwitterClient(keys[0], keys[1], keys[2], keys[3]);
+                var user = await userClient.Users.GetAuthenticatedUserAsync();
+                var tweet = await userClient.Tweets.PublishTweetAsync(titles[i] + "\n" + links[i]);
+                Console.WriteLine(Environment.NewLine);
+                File.AppendAllText(logsPath + startTime + ".txt", Environment.NewLine);
+                string[] freq = File.ReadAllLines(path + "/frequency.txt");
+                freq[urlNum] = (Int32.Parse(freq[urlNum]) + 1).ToString();
+                File.WriteAllText(path + "/frequency.txt", "");
+                bool runOnce = false;
+                foreach (string item in freq)
+                {
+                    if (runOnce == false)
+                    {
+                        File.AppendAllText(path + "/frequency.txt", item);
+                        runOnce = true;
+                    }
+                    else
+                    {
+                        File.AppendAllText(path + "/frequency.txt", Environment.NewLine + item);
+                    }
+                }
+                attempts = 0;
+                failure = false;
+                titles.Clear();
+                links.Clear();
+                if (test == true)
+                {
+                    Console.WriteLine(DateTime.Now + ": Press any key to exit...");
+                    File.AppendAllText(logsPath + startTime + ".txt", DateTime.Now + ": Press any key to exit...");
+                    Console.ReadKey();
+                    Environment.Exit(0);
+                }
+                else
+                {
+                    return;
+                }
             }
-            else
+            catch (IOException error)
             {
-                await Timer();
+                Console.Error.WriteLine(error);
             }
         }
         static async Task Timer()
         {
-            Thread.Sleep(60000);
+            Thread.Sleep(30000);
             if (hour < DateTime.Now.Hour || (hour <= 23 && DateTime.Now.Hour == hour + value - 24))
             {
                 hour = DateTime.Now.Hour + value - 1; ;
@@ -163,12 +243,12 @@ namespace RandomRSSTwitterBot
                     hour = hour - 24;
                 }
                 Console.WriteLine(DateTime.Now + ": Seeking article to post...");
-                File.AppendAllText(path + "/logs/" + startTime + ".txt", DateTime.Now + ": Seeking article to post..." + Environment.NewLine);
+                File.AppendAllText(logsPath + startTime + ".txt", DateTime.Now + ": Seeking article to post..." + Environment.NewLine);
                 await Seek();
             }
             else
             {
-                await Timer();
+                return;
             }
         }
     }
