@@ -383,6 +383,8 @@ namespace RandomRSSTwitterBot
             {
                 if (File.Exists(path + "/mult/" + urlNum + ".txt"))
                 {
+                    Console.WriteLine(DateTime.Now + ": Chose source #" + urlNum + " (" + url + ")!");
+                    File.AppendAllText(logsPath + startTime + ".txt", DateTime.Now + ": Chose source #" + urlNum + " (" + url + ")!" + Environment.NewLine);
                     Console.WriteLine(DateTime.Now + ": Source has multiple feeds, choosing one...");
                     File.AppendAllText(logsPath + startTime + ".txt", DateTime.Now + ": Source has multiple feeds, choosing one..." + Environment.NewLine);
                     string[] multSources = File.ReadAllLines(path + "/mult/" + urlNum + ".txt");
