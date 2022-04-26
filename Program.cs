@@ -30,6 +30,7 @@ namespace RandomRSSTwitterBot
         private static int queueAttempt = 0;
         private static int queueGap;
         private static string url;
+        private static int hour = DateTime.Now.Hour;
         private static int value;
         private static int timerMS;
         private static double threshold;
@@ -145,7 +146,7 @@ namespace RandomRSSTwitterBot
             else
             {
                 // Properly formatting hour for use
-                int hour = DateTime.Now.Hour + value - 1;
+                hour = hour + value - 1;
                 if (hour >= 24)
                 {
                     hour = hour - 24;
@@ -155,10 +156,10 @@ namespace RandomRSSTwitterBot
                 Console.WriteLine(DateTime.Now + ": Running bot every " + value + " hour(s)!" + Environment.NewLine);
                 File.AppendAllText(logsPath + startTime + ".txt", DateTime.Now + ": Running bot every " + value + " hour(s)!" + Environment.NewLine + Environment.NewLine);
 
-                // Checking every 30 seconds for change of hour aligning with frequency in hours to run and initiate next cycle
+                // Checking change of hour per timer length as defined in config, aligning with frequency in hours to run and initiate next cycle
                 while (true)
                 {
-                    await Timer(hour, value);
+                    await Timer();
 
                     // Cleaning up for next cycle, to preserve variables used in multiple places and keep memory usage low
                     attempts = 0;
@@ -428,16 +429,16 @@ namespace RandomRSSTwitterBot
                 Console.Error.WriteLine(error);
             }
         }
-        
-        // Method for checking every 30 seconds for change of hour aligning with frequency in hours to run and initiate next cycle
-        static async Task Timer(int hour, int value)
+
+        // Method for checking change of hour per timer length as defined in config, aligning with frequency in hours to run and initiate next cycle
+        static async Task Timer()
         {
             try
             {
                 Thread.Sleep(timerMS);
                 if (hour < DateTime.Now.Hour || (hour <= 23 && DateTime.Now.Hour == hour + value - 24))
                 {
-                    hour = DateTime.Now.Hour + value - 1; ;
+                    hour = DateTime.Now.Hour + value - 1;
                     if (hour >= 24)
                     {
                         hour = hour - 24;
