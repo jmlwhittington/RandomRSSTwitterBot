@@ -220,7 +220,7 @@ namespace RandomRSSTwitterBot
                     }
 
                     // What happens if enough cycles have not passed since last queue pull
-                    else
+                    else if (seekNum == -1)
                     {
                         queueAttempt = queueAttempt + 1;
                     }
