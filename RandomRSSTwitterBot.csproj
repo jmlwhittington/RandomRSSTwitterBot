@@ -17,7 +17,7 @@
 	<PropertyGroup>
 		<ApplicationIcon></ApplicationIcon>
 		<Authors>Justin Whittington</Authors>
-		<Version>0.5.1</Version>
+		<Version>0.5.2</Version>
 		<Description>A Twitter bot written in C# using Tweetinvi and System.ServiceModel.Syndication to tweet a random article from a custom list of RSS feeds at a custom frequency in hours.</Description>
 		<Copyright>2022 Justin Whittington</Copyright>
 		<PackageLicenseExpression>CC BY-NC-SA 4.0 (https://creativecommons.org/licenses/by-nc-sa/4.0/)</PackageLicenseExpression>
