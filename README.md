@@ -1,4 +1,4 @@
-# RandomRSSTwitterBot v0.5.3
+# RandomRSSTwitterBot (v0.5.3)
 A Twitter bot written in C# using [Tweetinvi](https://github.com/linvi/tweetinvi) and [System.ServiceModel.Syndication](https://www.nuget.org/packages/System.ServiceModel.Syndication/) to tweet a random article from a custom list of RSS feeds at a custom frequency in hours.
 
 If you have any questions, feel free to raise an issue!
