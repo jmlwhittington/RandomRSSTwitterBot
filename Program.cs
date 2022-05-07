@@ -139,7 +139,7 @@ namespace RandomRSSTwitterBot
                 Console.WriteLine(DateTime.Now + ": Running bot test!" + Environment.NewLine);
                 File.AppendAllText(logsPath + startTime + ".txt", DateTime.Now + ": Running bot test!" + Environment.NewLine + Environment.NewLine);
                 test = true;
-                await Seek(-1);
+                await Seek();
             }
 
             // Running bot as normal if no test being ran
@@ -188,7 +188,7 @@ namespace RandomRSSTwitterBot
 
                 // Checking if queue has any entries in it and using first one if so then bypassing rest of method
                 string[] queue = File.ReadAllLines(path + "/queue.txt");
-                if (queue.Length > 1)
+                if (queue.Length > 1 && seekNum == -1)
                 {
                     // Checking if enough cycles have passed since last queue pull
                     if (queueAttempt >= queueGap)
@@ -220,9 +220,11 @@ namespace RandomRSSTwitterBot
                     }
 
                     // What happens if enough cycles have not passed since last queue pull
-                    else if (seekNum == -1)
+                    else
                     {
                         queueAttempt = queueAttempt + 1;
+                        Console.WriteLine(DateTime.Now + ": Bot will use queue in " + (queueGap - queueAttempt) + "cycle(s)!");
+                        File.AppendAllText(logsPath + startTime + ".txt", DateTime.Now + ": Bot will use queue in " + (queueGap - queueAttempt) + "cycle(s)!" + Environment.NewLine);
                     }
                 }
 
@@ -230,6 +232,8 @@ namespace RandomRSSTwitterBot
                 else
                 {
                     queueAttempt = 0;
+                    Console.WriteLine(DateTime.Now + ": Queue is empty, resetting queue attempts...");
+                    File.AppendAllText(logsPath + startTime + ".txt", DateTime.Now + ": Queue is empty, resetting queue attempts..." + Environment.NewLine);
                 }
 
                 // What happens if queue is empty
