@@ -47,8 +47,8 @@ namespace RandomRSSTwitterBot
             File.WriteAllText(logsPath + startTime + ".txt", "");
 
             // Boot message
-            Console.WriteLine(DateTime.Now + ": RandomRSSTwitterBot booting up!" + Environment.NewLine);
-            File.AppendAllText(logsPath + startTime + ".txt", DateTime.Now + ": RandomRSSTwitterBot booting up!" + Environment.NewLine + Environment.NewLine);
+            Console.WriteLine(DateTime.Now + ": RandomRSSTwitterBot v0.5.3 booting up!" + Environment.NewLine);
+            File.AppendAllText(logsPath + startTime + ".txt", DateTime.Now + ": RandomRSSTwitterBot v0.5.3 booting up!" + Environment.NewLine + Environment.NewLine);
 
             // Checking if config file exists, creating it if not and exiting to allow user to input keys
             if (!File.Exists(path + "/config.txt"))
@@ -223,13 +223,13 @@ namespace RandomRSSTwitterBot
                     else
                     {
                         queueAttempt = queueAttempt + 1;
-                        Console.WriteLine(DateTime.Now + ": Bot will use queue in " + (queueGap - queueAttempt) + "cycle(s)!");
-                        File.AppendAllText(logsPath + startTime + ".txt", DateTime.Now + ": Bot will use queue in " + (queueGap - queueAttempt) + "cycle(s)!" + Environment.NewLine);
+                        Console.WriteLine(DateTime.Now + ": Bot will use queue in " + (queueGap - queueAttempt) + " cycle(s)!");
+                        File.AppendAllText(logsPath + startTime + ".txt", DateTime.Now + ": Bot will use queue in " + (queueGap - queueAttempt) + " cycle(s)!" + Environment.NewLine);
                     }
                 }
 
                 // Reset queue gap counter if queue is empty, in case queue is manually cleared
-                else
+                else if (queue.Length <= 1 && seekNum == -1)
                 {
                     queueAttempt = 0;
                     Console.WriteLine(DateTime.Now + ": Queue is empty, resetting queue attempts...");
