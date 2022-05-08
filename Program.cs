@@ -223,13 +223,13 @@ namespace RandomRSSTwitterBot
                     else
                     {
                         queueAttempt = queueAttempt + 1;
-                        Console.WriteLine(DateTime.Now + ": Bot will use queue in " + (queueGap - queueAttempt) + " cycle(s)!");
-                        File.AppendAllText(logsPath + startTime + ".txt", DateTime.Now + ": Bot will use queue in " + (queueGap - queueAttempt) + " cycle(s)!" + Environment.NewLine);
+                        Console.WriteLine(DateTime.Now + ": Bot will use queue in " + (queueGap - queueAttempt + 1) + " cycle(s)!");
+                        File.AppendAllText(logsPath + startTime + ".txt", DateTime.Now + ": Bot will use queue in " + (queueGap - queueAttempt + 1) + " cycle(s)!" + Environment.NewLine);
                     }
                 }
 
                 // Reset queue gap counter if queue is empty, in case queue is manually cleared
-                else if (queue.Length <= 1 && seekNum == -1)
+                else if (queue.Length <= 1 && queueAttempt > 0 && seekNum == -1)
                 {
                     queueAttempt = 0;
                     Console.WriteLine(DateTime.Now + ": Queue is empty, resetting queue attempts...");
