@@ -1,7 +1,7 @@
 # RandomRSSTwitterBot (v0.5.3)
 A Twitter bot written in C# using [Tweetinvi](https://github.com/linvi/tweetinvi) and [System.ServiceModel.Syndication](https://www.nuget.org/packages/System.ServiceModel.Syndication/) to tweet a random article from a custom list of RSS feeds at a custom frequency in hours.
 
-If you have any questions, feel free to raise an issue!
+If you have any questions, feel free to create a discussion or raise an issue!
 
 ## Installation and setup
 To install the bot, download the latest release, drag the folder out of the *.RAR* archive, and place it wherever you intend to store the bot. Run it once to produce a *config.txt* file, then input your keys there and tweak the other settings such as how frequently it posts (in hours). Run the bot again, and it will create a few more files (a *logs* folder where logs are stored and titled by Unix timestamp, a *sources.txt* file, a *mult* folder where sources with multiple feeds may be utilized, a *postings.txt* file, a *frequency.txt*, and a *queue.txt* file). Test the bot by changing the frequency in the config to 0. If the bot ran successfully, it will have posted something from the default feed (the Technology topic on Google News).
